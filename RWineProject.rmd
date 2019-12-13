@@ -1,24 +1,61 @@
 ---
 title: "Data Driven Wine" 
 author: "By: Jonathan Grays"
-output: html_document
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    
+    # theme of html document
+    # theme of code highlight                                 
+    # table of contents
+    
+    theme       : cosmo          # "default", "cerulean", "journal",
+                                    # "flatly", "readable", "spacelab",
+                                    # "united", "cosmo", "lumen", "paper", 
+                                    # "sandstone", "simplex", "yeti"
+    highlight   : tango          # "default", "tango", "pygments",
+                                    # "kate",  "monochrome", "espresso",
+                                    # "zenburn", "haddock", "textmate"
+    toc         : true              # get table of content
+    toc_depth   : 3
+    toc_float   : true
+    code_folding: hide
+    number_sections: yes
+    fig_caption: yes
+    df_print    : paged
 ---
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, knitR}
+
+# knitr: Suppress code/messages/warnings 
+#        Set default plot options and center them
+
+knitr::opts_chunk$set(fig.width=9,fig.height=5,fig.path='Figs/',
+                      fig.align='center',tidy=TRUE,
+                      echo=FALSE,warning=FALSE,message=FALSE)
+
+```
 
 <br>
 <br>
 
 #### This report will explore a dataset containing chemical attributes for approximately 4,900 white wines.
+<br>
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
+
 # Libraries being used in presentation/analysis
 
+library(knitr)
 library(ggplot2)
 library(gridExtra)
 library(ggcorrplot)
 library(RColorBrewer)
+
 ```
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Load_the_Data}
+
 # Load the Data
 
 wine_df <- read.csv('wineQualityWhites.csv')
@@ -32,15 +69,17 @@ wine_df$X <- NULL
 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots}
-# Summary of information within dataframe
 
+# Summary of information within dataframe
 summary(wine_df)
+
 ```
 <br>
 Our dataset consists of 12 variables, with almost 4,900 observations.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots2}
 
+# Histograms - Quality
 ggplot(aes(x = quality), data = wine_df) + 
   geom_bar() +
   scale_x_continuous(limits = c(0,10))
@@ -56,8 +95,9 @@ The first variable that caught my attention was "quality".  This looks to be per
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots3}
 
+# Histograms - Density
 ggplot(aes(x = density), data = wine_df) + 
-  geom_histogram(binwidth = .00005) +
+  geom_histogram(bins = 30, color = "white") +
   scale_x_continuous(limits = c(0.9871, 1.0025))
 
 ```
@@ -70,6 +110,7 @@ The next variable that seemed interesting was "density".  Measured in grams per 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots4}
 
+# Grid of Histograms - Sulphates and acidities
 p1 <- ggplot(aes(x = sulphates), data = wine_df) +geom_bar()
 
 p2 <- ggplot(aes(x = citric.acid), data = wine_df) + geom_bar() +
@@ -93,8 +134,10 @@ Above we have a grouping of the differing types of acidity.  Since volatile.acid
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots5}
 
+# Histograms - Volatile Acidity
 ggplot(aes(x = volatile.acidity), data = wine_df) + geom_bar()
-  
+
+# Log10 Histogram - Volatile Acidity 
 ggplot(aes(x = volatile.acidity), data = wine_df) + 
   geom_histogram(binwidth = .007) +
   scale_x_log10()
@@ -106,6 +149,7 @@ Transforming the data with a log10 function didn't provide much more information
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots6}
 
+# Histograms - Sulfur Dioxides
 g1 <- ggplot(aes(x = free.sulfur.dioxide), data = wine_df) + geom_bar() +
   scale_x_continuous(limits = c(0, 100))
 
@@ -123,6 +167,7 @@ Here we have a grouping of free sulfur dioxide and total sulfur dioxide graphs. 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots7}
 
+# Histogram - pH
 ggplot(aes(x = pH), data = wine_df) +
   geom_bar()
 
@@ -173,7 +218,8 @@ The data itself was tidy enough to work with and did not require any adjusting/c
 
 
 ```{r echo=FALSE, Bivariate_Plots}
-# Setting correlation variable
+
+# Setting correlation variable, rounds to 2 decimal places
 corr <- round(cor(wine_df), 2)
 p.mat <- cor_pmat(wine_df)
 
@@ -198,6 +244,8 @@ Some bivariate relationships that I would like to explore:
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Bivariate_Plots2}
 
+# Scatterplot - density vs alcohol
+
 ggplot(aes(x = density, y = alcohol), data = wine_df) + 
   geom_point(alpha = .15) +
   geom_smooth() +
@@ -210,6 +258,8 @@ I used the Loess regression curve in the plot above to illustrate that the data 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Bivariate_Plots3}
 
+# Scatterplot - density vs total sulfur dioxide
+
 ggplot(aes(x = density, y = total.sulfur.dioxide), data = wine_df) +   geom_point(alpha = .1) +
   geom_smooth(method = lm, se = FALSE) +
   scale_x_continuous(limits = c(.98725, 1.0025)) +
@@ -220,6 +270,9 @@ ggplot(aes(x = density, y = total.sulfur.dioxide), data = wine_df) +   geom_poin
 > Adjusted the X and Y axes to eliminate outliers
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Bivariate_Plots4}
+
+# Scatterplot - pH vs fixed acidity
+# Added in Loess Regression curve
 
 ggplot(aes(x = pH, y = fixed.acidity), data = wine_df) + 
   geom_point(alpha = .1) +
@@ -250,6 +303,9 @@ The strongest variable relationship I found was between the white wine density a
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Multivariate_Plots}
 
+# Scatterplot - density vs alcohol
+# Color broken out by quality
+
 ggplot(aes(x = density, y = alcohol), data = wine_df) + 
   geom_point(aes(colour = as.factor(quality))) +
   xlim(c(.9870, 1.0025)) +
@@ -262,6 +318,10 @@ ggplot(aes(x = density, y = alcohol), data = wine_df) +
 Here we have a scatterplot showing the trends among density and alcohol, broken out in color by the differing qualities.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Multivariate_Plots2}
+
+# Scatterplot - density vs alcohol
+# Only quality 3s and 4s
+
 ggplot(subset(wine_df, quality %in% c("3", "4"))) + 
   geom_point(aes(density, alcohol, colour = as.factor(quality)))
 
@@ -287,6 +347,9 @@ One thing of interest is that the lowest quality wines (3 and 4), albeit there w
 ### Plot One
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Plot_One}
 
+# Histogram - volatile acidity
+# Cleaner and labeled
+
 ggplot(aes(x = volatile.acidity), data = wine_df) + 
   geom_histogram(binwidth = .007) +
   scale_x_log10() +
@@ -301,6 +364,9 @@ I wanted to explore the distribution of the Volatile Acidity in white wines a bi
 
 ### Plot Two
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Plot_Two}
+
+# Scatterplot - density vs alcohol
+# Cleaner and labeled
 
 ggplot(aes(x = density, y = alcohol), data = wine_df) + 
   geom_point(alpha = .15) +
@@ -317,6 +383,9 @@ One of the plots that I found the most descriptive was the scatterplot used for 
 
 ### Plot Three
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Plot_Three}
+
+# Scatterplot - density vs alcohol
+# Cleaner and labeled
 
 ggplot(aes(x = density, y = alcohol), data = wine_df) + 
   geom_point(aes(colour = as.factor(quality))) +
